@@ -48,9 +48,20 @@ public:
 	struct Data
 	{
 		Data():bytes(NULL), len(0), isBinary(false){}
-		char* bytes;
-		int len;
+
 		bool isBinary;
+		char* getPayload() {
+			return bytes + bytesWritten;
+		}
+		void updateBytesWritten(uint32_t bytes) {
+			bytesWritten += bytes;
+		}
+		uint32_t getBytesLeft() {
+			return len - bytesWritten;
+		}
+		int bytesWritten = 0;
+		char* bytes;
+		uint32_t len;
 	};
     
 	/**
@@ -143,7 +154,7 @@ private:
 	std::string  m_host;
 	unsigned int m_port;
 	std::string  m_path;
-    
+    std::string  m_origin;
 	friend class WsThreadHelper;
 	WsThreadHelper* m_wsHelper;
     
@@ -156,8 +167,8 @@ private:
     bool m_bLastIsBin = false;
     char* m_pLastData = nullptr;
     size_t m_nCurDataLen = 0;
+	std::string m_supportedProtocols;
 };
-
 }
 
 #endif /* defined(__LAYA_WEBSOCKET_H__) */

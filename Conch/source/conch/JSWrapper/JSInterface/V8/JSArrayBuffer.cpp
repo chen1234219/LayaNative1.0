@@ -102,15 +102,15 @@ namespace laya{
 
 	v8::Local<v8::ArrayBuffer> createJSAB(char* pData, int len) {
 		v8::Local<v8::ArrayBuffer> ab = v8::ArrayBuffer::New(v8::Isolate::GetCurrent(), len);
-        #ifdef OHOS
+        //#ifdef OHOS
         std::shared_ptr<BackingStore> contents = ab->GetBackingStore();// ab->Externalize();
 		char* pPtr = (char*)contents->Data();
 		memcpy(pPtr, pData, len);
-        #else
-        v8::ArrayBuffer::Contents contents = ab->GetContents();// ab->Externalize();
-		char* pPtr = (char*)contents.Data();
-		memcpy(pPtr, pData, len);
-        #endif
+        //#else
+        //v8::ArrayBuffer::Contents contents = ab->GetContents();// ab->Externalize();
+		//char* pPtr = (char*)contents.Data();
+		//memcpy(pPtr, pData, len);
+        //#endif
 		//Externalize 以后会减去内存占用，导致不能正确GC，所以再给加回来。不知道管理ArrayBuffer的正确方法是什么。
 		//v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(len);
 		return ab;
@@ -119,15 +119,15 @@ namespace laya{
     v8::Local<v8::ArrayBuffer> createJSABAligned(char* pData, int len) {
         int asz = (len + 3) & 0xfffffffc;
         v8::Local<v8::ArrayBuffer> ab = v8::ArrayBuffer::New(v8::Isolate::GetCurrent(), asz);
-        #ifdef OHOS
+        //#ifdef OHOS
         std::shared_ptr<BackingStore> contents = ab->GetBackingStore();
 		char* pPtr = (char*)contents->Data();
 		memcpy(pPtr, pData, len);
-        #else
-        v8::ArrayBuffer::Contents contents = ab->GetContents();// ab->Externalize();
-        char* pPtr = (char*)contents.Data();
-        memcpy(pPtr, pData, len);
-        #endif
+        //#else
+        //v8::ArrayBuffer::Contents contents = ab->GetContents();// ab->Externalize();
+        //char* pPtr = (char*)contents.Data();
+        //memcpy(pPtr, pData, len);
+        //#endif
         //ArrayBuffer 自己已经初始化为0了
         //Externalize 以后会减去内存占用，导致不能正确GC，所以再给加回来。不知道管理ArrayBuffer的正确方法是什么。
         //v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(asz);
@@ -140,26 +140,26 @@ namespace laya{
 			v8::Local<v8::ArrayBufferView> abv = v8::Local<v8::ArrayBufferView>::Cast(jsval);
             len = abv->ByteLength();
 			ab = abv->Buffer();
-            #ifdef OHOS
+            //#ifdef OHOS
             std::shared_ptr<BackingStore> contents = ab->GetBackingStore();
 		    data = (char*)contents->Data()+abv->ByteOffset();
-            #else
-            v8::ArrayBuffer::Contents contents = ab->GetContents();
-            //len = contents.ByteLength();  这种情况下，用view的长度，因为可能多个view公用一个大buffer
-            data = (char*)contents.Data()+abv->ByteOffset();
-            #endif
+            //#else
+            //v8::ArrayBuffer::Contents contents = ab->GetContents();
+            ////len = contents.ByteLength();  这种情况下，用view的长度，因为可能多个view公用一个大buffer
+            //data = (char*)contents.Data()+abv->ByteOffset();
+            //#endif
         }
 		else if (jsval->IsArrayBuffer()) {
 			ab = v8::Local<v8::ArrayBuffer>::Cast(jsval);
-            #ifdef OHOS
+            //#ifdef OHOS
             std::shared_ptr<BackingStore> contents = ab->GetBackingStore();
             len = contents->ByteLength();
             data = (char*)contents->Data();
-            #else
-            v8::ArrayBuffer::Contents contents = ab->GetContents();
-            len = contents.ByteLength();
-            data = (char*)contents.Data();
-            #endif
+            //#else
+            //v8::ArrayBuffer::Contents contents = ab->GetContents();
+            //len = contents.ByteLength();
+            //data = (char*)contents.Data();
+            //#endif
         }
 		else {
 			data = NULL;
@@ -214,8 +214,8 @@ namespace laya{
             int start = message->GetStartColumn(ctx).FromMaybe(0);
             int end = message->GetEndColumn(ctx).FromMaybe(0);
             v8::ScriptOrigin origin = message->GetScriptOrigin();
-            int lineoff = origin.ResourceLineOffset()->Value();
-            int startcol = origin.ResourceColumnOffset()->Value();
+            int lineoff = origin.LineOffset();
+            int startcol = origin.ColumnOffset();
             if (start > startcol) {
                 start -= startcol;
                 end -= startcol;

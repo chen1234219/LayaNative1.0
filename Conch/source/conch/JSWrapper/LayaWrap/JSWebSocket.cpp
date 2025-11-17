@@ -25,20 +25,18 @@ namespace laya
         m_js_WebSocket = p_js_WebSocket;
         m_pCmdPoster = JCScriptRuntime::s_JSRT->m_pPoster;
     }
-
-
     void JSWebSocketDelegate::onOpen(WebSocket* ws)
     {
-#ifdef OHOS
-        LOGI("JSWebSocketDelegate::onOpen() this=%{public}x ws=%{public}x", (long)this, (long)m_js_WebSocket);
-#else
-        LOGI("JSWebSocketDelegate::onOpen() this=%x ws=%x", (long)this, (long)m_js_WebSocket);
-#endif
+    	m_js_WebSocket->m_nWebSocketState = WSS_OPEN;
+        #ifdef OHOS
+        LOGI("JSWebSocketDelegate::onOpen() this=%{public}x ws=%{public}x", (long)this,(long)m_js_WebSocket);
+        #else
+        LOGI("JSWebSocketDelegate::onOpen() this=%x ws=%x", (long)this,(long)m_js_WebSocket);
+        #endif
         std::string p_sEvent;
         m_js_WebSocket->closeTime = 0;
         m_pCmdPoster->postToJS(std::bind(&JSWebSocket::onSocketOpenCallJSFunction, m_js_WebSocket, p_sEvent, jswsref));
     }
-
     void JSWebSocketDelegate::onMessage(WebSocket* ws, const WebSocket::Data& data)
     {
         char* pDt = data.bytes;// new char[data.len];
@@ -63,7 +61,8 @@ namespace laya
     void JSWebSocketDelegate::onError(WebSocket* ws, const WebSocket::ErrorCode& error)
     {
         LOGW("JSWebSocketDelegate::onError( code=%d )this=%x ws=%x", error, (long)this, (long)m_js_WebSocket);
-        if (m_js_WebSocket->m_nWebSocketState == WSS_OPEN)
+        //if (m_js_WebSocket->m_nWebSocketState == WSS_OPEN)
+		if (m_js_WebSocket->m_nWebSocketState != WSS_CLOSE)
         {
             LOGW("JSWebSocketDelegate::onError123( code=%d )this=%x ws=%x", error, (long)this, (long)m_js_WebSocket);
             std::string p_sEvent = "error";
@@ -71,7 +70,6 @@ namespace laya
             m_pCmdPoster->postToJS(pFuncation);
         }
     }
-
     //------------------------------------------------------------------------------
     JSWebSocket::JSWebSocket()
     {
@@ -101,7 +99,7 @@ namespace laya
         m_nWebSocketState = WSS_INIT;
         if (Init(p_sUrl))
         {
-            m_nWebSocketState = WSS_OPEN;
+            //m_nWebSocketState = WSS_OPEN;
         }
         else
         {
@@ -146,20 +144,33 @@ namespace laya
 #else
         LOGI("JSWebSocket::onSocketCloseCallJSFunction this=%x", (long)this);
 #endif
-        if (m_nWebSocketState == WSS_OPEN) {
+        //if (m_nWebSocketState == WSS_OPEN || m_nWebSocketState == WSS_CLOSEING)
+        if (m_nWebSocketState != WSS_CLOSE)
+        {  
+            m_nWebSocketState = WSS_CLOSE;
             m_pJSFunctionOnClose.Call(p_sEvent.c_str());
         }
-        m_nWebSocketState = WSS_OPEN;
+        else
+        {
+            m_nWebSocketState = WSS_CLOSE;
+        }
+      
     }
     //------------------------------------------------------------------------------
     void JSWebSocket::onSocketErrorCallJSFunction(std::string p_sEvent, std::weak_ptr<int> cbref)
     {
         if (!cbref.lock())
             return;
-        if (m_nWebSocketState == WSS_OPEN) {
+        //if (m_nWebSocketState == WSS_OPEN)
+        if (m_nWebSocketState != WSS_CLOSE)
+        {
+            //m_nWebSocketState = WSS_CLOSE;
             m_pJSFunctionOnError.Call(p_sEvent.c_str());
         }
-        m_nWebSocketState = WSS_OPEN;
+        /*else
+        {
+            m_nWebSocketState = WSS_CLOSE;
+        }*/
     }
     //------------------------------------------------------------------------------
     /*

@@ -16,7 +16,7 @@ LOCAL_CFLAGS := \
   -DAL_ALEXT_PROTOTYPES \
   -frtti
 
-LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CPPFLAGS += -std=c++20
 
 ifeq ($(APP_PERFTEST),1)
 LOCAL_CFLAGS += -DPERFTEST 
@@ -24,7 +24,16 @@ endif
 
 ifeq ($(TARGET_ARCH),arm64)
    LOCAL_CFLAGS += -DV8_COMPRESS_POINTERS
-   LOCAL_CPPFLAGS+= -DV8_COMPRESS_POINTERS
+   LOCAL_CPPFLAGS += -DV8_COMPRESS_POINTERS
+   LOCAL_CFLAGS += -DV8_ENABLE_SANDBOX
+   LOCAL_CPPFLAGS+= -DV8_ENABLE_SANDBOX
+endif
+
+ifeq ($(TARGET_ARCH),x86_64)
+   LOCAL_CFLAGS += -DV8_COMPRESS_POINTERS
+   LOCAL_CPPFLAGS += -DV8_COMPRESS_POINTERS
+   LOCAL_CFLAGS += -DV8_ENABLE_SANDBOX
+   LOCAL_CPPFLAGS+= -DV8_ENABLE_SANDBOX
 endif
 
 LOCAL_CXXFLAGS := -O3
@@ -101,7 +110,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := ../../../../../ThirdParty/curl/include/android \
         ../../../../../ThirdParty/png/include/android \
-        ../../../../../ThirdParty/jpeg/include/android \
+        ../../../../../ThirdParty/jpeg-turbo/include/android \
         ../../../../../ThirdParty/freetype/include/android \
         ../../../../../ThirdParty/zip/include/android \
         ../../../../../ThirdParty/ogg/include/android \

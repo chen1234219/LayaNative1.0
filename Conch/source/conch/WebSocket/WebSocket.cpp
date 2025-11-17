@@ -7,7 +7,7 @@
  ****************************************************************************/
 
 #include "WebSocket.h"
-
+#include "Uri.h"
 #include <thread>
 #include <mutex>
 #include <queue>
@@ -18,6 +18,7 @@
 #include <thread>
 #include <stdlib.h>
 #include <downloadCache/JCFileSource.h>
+#include <algorithm>
 #ifdef ANDROID
 #include <downloadCache/JCAndroidFileSource.h>
 #elif __APPLE_
@@ -29,11 +30,15 @@
 #ifdef WIN32
 #include <filesystem>
 namespace  fs = std::experimental::filesystem::v1;
+#ifdef min
+#undef min
+#endif
 #else
 #include "fileSystem/JCFileSystem.h"
 #endif
 extern std::string gRedistPath;
 extern std::string gResourcePath;
+const uint32_t RX_BUFFER_SIZE = 65536;
 namespace laya{
 
     std::string WebSocket::s_strProxy;
@@ -224,44 +229,26 @@ bool WebSocket::init(const Delegate& delegate,
 						const std::vector<std::string>* protocols/* = NULL*/)
 {
 	bool ret = false;
-	bool useSSL = false;
-	std::string host = url;
-	int pos = 0;
-	int port = 80;
     
 	m_delegate = const_cast<Delegate*>(&delegate);
     
-	//ws://
-	pos = host.find("ws://");
-	if (pos == 0) host.erase(0,5);
+    Uri uri = Uri::parse(url);
+
+
+    int port = static_cast<int>(uri.getPort());
+    if (port == 0)
+        port = uri.isSecure() ? 443 : 80;
+
+    std::string path = uri.getPathEtc();
+    if (path.empty())
+        path = "/";
+
     
-	pos = host.find("wss://");
-	if (pos == 0)
-	{
-		host.erase(0,6);
-		useSSL = true;
-        port = 443;
-	}
-    
-	pos = host.find(":");
-	if (pos >= 0) port = atoi(host.substr(pos+1, host.size()).c_str());
-    
-	pos = host.find("/", 0);
-	std::string path = "/";
-	if (pos >= 0) path += host.substr(pos + 1, host.size());
-    
-	pos = host.find(":");
-	if(pos >= 0){
-		host.erase(pos, host.size());
-	}else if((pos = host.find("/"))>=0) {
-    	host.erase(pos, host.size());
-	}
-    
-	m_host = host;
+	m_host = uri.getHostName();
 	m_port = port;
 	m_path = path;
-
-	m_SSLConnection = useSSL ? LCCSCF_USE_SSL : 0;
+    m_origin = uri.getAuthority();
+	m_SSLConnection = uri.isSecure() ? LCCSCF_USE_SSL : 0;
     
 	LOGI("WebSocket::init m_host: %s, m_port: %d, m_path: %s", m_host.c_str(), m_port, m_path.c_str());
 
@@ -286,7 +273,7 @@ bool WebSocket::init(const Delegate& delegate,
 			char* name = new char[(*iter).length()+1];
 			strcpy(name, (*iter).c_str());
 			m_wsProtocols[i].name = name;
-			m_wsProtocols[i].rx_buffer_size=65536;
+			m_wsProtocols[i].rx_buffer_size = RX_BUFFER_SIZE;
 			m_wsProtocols[i].callback = WebSocketCallbackWrapper::onSocketCallback;
 		}
 	}
@@ -295,7 +282,7 @@ bool WebSocket::init(const Delegate& delegate,
 		char* name = new char[20];
 		strcpy(name, "default-protocol");
 		m_wsProtocols[0].name = name;
-		m_wsProtocols[0].rx_buffer_size=65536;	//������ﲻ�裬����android�µ����͵����ݺܶ��ʱ�򣬻ᵼ�·���ʧ�ܣ�����0��
+		m_wsProtocols[0].rx_buffer_size = RX_BUFFER_SIZE;	//������ﲻ�裬����android�µ����͵����ݺܶ��ʱ�򣬻ᵼ�·���ʧ�ܣ�����0��
 												//������ʱ��򲻵��־�����Ϊ�����ץ���������Ƿ��͵�Ϊԭʼ���ݣ�ͬ��ͨsocket��֪��Ϊʲô�������޹أ���
 		m_wsProtocols[0].callback = WebSocketCallbackWrapper::onSocketCallback;
 	}
@@ -316,8 +303,9 @@ void WebSocket::send(const std::string& message)
 		msg->what = WS_MSG_TO_SUBTRHEAD_SENDING_STRING;
 		Data* data = new Data();
 		data->bytes = new char[message.length()+1];
-		strcpy(data->bytes, message.c_str());
+		memcpy(data->bytes, message.c_str(), message.length());
 		data->len = message.length();
+        data->bytes[message.length()] = '\0';
 		msg->obj = data;
 		m_wsHelper->sendMessageToSubThread(msg);
 	}
@@ -354,7 +342,7 @@ void WebSocket::close()
 	m_readyState = State::CLOSED;	
 	
 	m_bWantClose = true;
-
+	lws_cancel_service(m_wsContext);
 	m_wsHelper->joinSubThread();
     
 	// onClose callback needs to be invoked at the end of this method
@@ -388,37 +376,76 @@ int WebSocket::onSubThreadLoop()
 
 	return 0;
 }
+	void WebSocket::onSubThreadStarted() {
 
-void WebSocket::onSubThreadStarted(){
 
-    lws_context_creation_info info = createContextCreationInfo(m_wsProtocols, true);
+        //定义重试策略（关闭 LWS 自动 ping/pong）
+           lws_retry_bo_t retry_policy = {
+               .retry_ms_table = NULL,
+               .retry_ms_table_count = 0,
+               .jitter_percent = 0,
+               .secs_since_valid_ping = 0xffff,
+               .secs_since_valid_hangup = 0xffff,
+           };
+
+           lws_context_creation_info info = createContextCreationInfo(m_wsProtocols, true);
+
+           info.retry_and_idle_policy = &retry_policy;
+           info.timeout_secs = 0xffff;
+
+        
 	m_wsContext = lws_create_context(&info);
-    lws_vhost* p_wsvhost = createVhost(m_wsProtocols, m_SSLConnection);
-    if (s_strProxy.length() > 0) {
-        lws_set_proxy(p_wsvhost, s_strProxy.c_str());
-    }
-    //lws_set_log_level(0xff, nullptr);
-    
-	if(nullptr != m_wsContext)
+	if (nullptr != m_wsContext)
 	{
-		m_readyState = State::CONNECTING;
-		std::string name;
-		for (int i = 0; m_wsProtocols[i].callback != nullptr; ++i)
-		{
-			name += (m_wsProtocols[i].name);
-            
-			if (m_wsProtocols[i+1].callback != nullptr) name += ", ";
-		}
-		//m_wsInstance = libwebsocket_client_connect(m_wsContext, m_host.c_str(), m_port, m_SSLConnection,
-		//                                     m_path.c_str(), m_host.c_str(), m_host.c_str(),
-		//                                     name.c_str(), -1);
-		m_wsInstance = lws_client_connect(m_wsContext, m_host.c_str(), m_port, m_SSLConnection,
-												m_path.c_str(), m_host.c_str(), m_host.c_str(),
-												NULL, -1);
 
+		static const struct lws_extension EXTENSIONS[] =
+		{
+			{"permessage-deflate",
+			 lws_extension_callback_pm_deflate,
+			 // client_no_context_takeover extension is not supported in the current version, it will cause connection fail
+			 // It may be a bug of lib websocket build
+			 //            "permessage-deflate; client_no_context_takeover; client_max_window_bits"
+			 "permessage-deflate; client_max_window_bits"},
+			{"deflate-frame",
+			 lws_extension_callback_pm_deflate,
+			 "deflate_frame"},
+			{nullptr, nullptr, nullptr /* terminator */} };
+
+		m_readyState = State::CONNECTING;
+
+		struct lws_vhost* vhost = nullptr;
+
+		vhost = createVhost(m_wsProtocols, m_SSLConnection);
+
+		if (s_strProxy.length() > 0)
+		{
+			lws_set_proxy(vhost, s_strProxy.c_str());
+		}
+
+		struct lws_client_connect_info connectInfo;
+		memset(&connectInfo, 0, sizeof(connectInfo));
+		connectInfo.context = m_wsContext;
+		connectInfo.address = m_host.c_str();
+		connectInfo.port = m_port;
+		connectInfo.ssl_connection = m_SSLConnection;
+		connectInfo.path = m_path.c_str();
+		connectInfo.host = m_host.c_str();
+		connectInfo.origin = m_origin.c_str();
+		connectInfo.protocol = m_supportedProtocols.empty() ? nullptr : m_supportedProtocols.c_str();
+		connectInfo.ietf_version_or_minus_one = -1;
+		connectInfo.userdata = this;
+		connectInfo.client_exts = EXTENSIONS;
+		connectInfo.vhost = vhost;
+
+		m_wsInstance = lws_client_connect_via_info(&connectInfo);
+
+		if (m_wsInstance == nullptr)
+		{
+			//connection Error();
+			return;
+		}
 	}
 }
-
 void WebSocket::onSubThreadEnded()
 {
 
@@ -429,7 +456,7 @@ int WebSocket::onSocketCallback(
 						int reason,
 						void *user, void *in, size_t len)
 {
-	//CCLOG("socket callback for %d reason", reason);
+
 	//assert(m_wsContext == nullptr || ctx == m_wsContext);
 	//assert(m_wsInstance == nullptr || wsi == nullptr || wsi == m_wsInstance);
 	switch (reason)
@@ -438,6 +465,7 @@ int WebSocket::onSocketCallback(
 		case LWS_CALLBACK_PROTOCOL_DESTROY:
 		case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 			{
+				LOGI("WebSocket onSocketCallback connection error %s %d reason", in != nullptr ? (const char*)in : "", reason);
 				WsMessage* msg = nullptr;
 				if (reason == LWS_CALLBACK_CLIENT_CONNECTION_ERROR
 					|| (reason == LWS_CALLBACK_PROTOCOL_DESTROY && m_readyState == State::CONNECTING)
@@ -477,78 +505,115 @@ int WebSocket::onSocketCallback(
             
 		case LWS_CALLBACK_CLIENT_WRITEABLE:
 			{
-				std::lock_guard<std::mutex> lock(*m_wsHelper->m_subThreadWsMessageQueueMutex);
-                                               
-				std::list<WsMessage*>::iterator iter = m_wsHelper->m_subThreadWsMessageQueue->begin();
-                
-				int bytesWrite = 0;
-				for (; iter != m_wsHelper->m_subThreadWsMessageQueue->end(); )
-				{
-					WsMessage* subThreadMsg = *iter;
-                    
-					if ( WS_MSG_TO_SUBTRHEAD_SENDING_STRING == subThreadMsg->what
-						|| WS_MSG_TO_SUBTRHEAD_SENDING_BINARY == subThreadMsg->what)
-					{
-						Data* data = (Data*)subThreadMsg->obj;
+				do {
+					std::lock_guard<std::mutex> lock(*m_wsHelper->m_subThreadWsMessageQueueMutex);
 
-						unsigned char* buf = new unsigned char[LWS_SEND_BUFFER_PRE_PADDING
-																+ data->len + LWS_SEND_BUFFER_POST_PADDING];
-                        
-						memset(&buf[LWS_SEND_BUFFER_PRE_PADDING], 0, data->len);
-						memcpy((char*)&buf[LWS_SEND_BUFFER_PRE_PADDING], data->bytes, data->len);
-                        
-						enum lws_write_protocol writeProtocol;
-                        
-						if (WS_MSG_TO_SUBTRHEAD_SENDING_STRING == subThreadMsg->what)
-						{
-							writeProtocol = LWS_WRITE_TEXT;
+					std::list<WsMessage *>::iterator iter = m_wsHelper->m_subThreadWsMessageQueue->begin();
+
+					int bytesWrite = 0;
+					for (; iter != m_wsHelper->m_subThreadWsMessageQueue->end();) {
+						WsMessage *subThreadMsg = *iter;
+
+						if (WS_MSG_TO_SUBTRHEAD_SENDING_STRING == subThreadMsg->what
+							|| WS_MSG_TO_SUBTRHEAD_SENDING_BINARY == subThreadMsg->what) {
+							Data *data = (Data *) subThreadMsg->obj;
+
+							uint32_t toWriteSize = std::min(RX_BUFFER_SIZE, data->getBytesLeft());
+							unsigned char *buf = new unsigned char[LWS_SEND_BUFFER_PRE_PADDING
+																   + toWriteSize];
+
+							memset(&buf[LWS_SEND_BUFFER_PRE_PADDING], 0, toWriteSize);
+							memcpy((char *) &buf[LWS_SEND_BUFFER_PRE_PADDING], data->getPayload(),
+								   toWriteSize);
+
+							int writeProtocol;
+							uint32_t bytesLeft = data->getBytesLeft();
+							if (data->bytesWritten == 0) {
+								if (WS_MSG_TO_SUBTRHEAD_SENDING_STRING == subThreadMsg->what) {
+									writeProtocol = LWS_WRITE_TEXT;
+								} else {
+									writeProtocol = LWS_WRITE_BINARY;
+								}
+								if (data->len > RX_BUFFER_SIZE) {
+									writeProtocol |= LWS_WRITE_NO_FIN;
+								}
+							} else {
+								writeProtocol = LWS_WRITE_CONTINUATION;
+								if (data->getBytesLeft() != toWriteSize) {
+									writeProtocol |= LWS_WRITE_NO_FIN;
+								}
+							}
+
+							bytesWrite = lws_write(wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING],
+												   toWriteSize,
+												   static_cast<lws_write_protocol>(writeProtocol));
+							/*if (bytesWrite == 0) {
+								//��ʱ�޷����ͣ��Ȼ������
+								break;
+							}
+							if (bytesWrite == 0) {
+								break;
+							}*/
+							if (bytesWrite < 0) {
+								//���������ˡ�
+								LOGE("WebSocket::onSocketCallback libwebsocket_write error! ");
+								LAYA_SAFE_DELETE_ARRAY(data->bytes);
+								LAYA_SAFE_DELETE(data);
+								LAYA_SAFE_DELETE_ARRAY(buf);
+								break;
+							}
+							else if (bytesWrite < toWriteSize) {
+								data->updateBytesWritten(bytesWrite);
+								LAYA_SAFE_DELETE_ARRAY(buf);
+							}
+							else if (bytesLeft == bytesWrite) {
+								LAYA_SAFE_DELETE_ARRAY(data->bytes);
+								LAYA_SAFE_DELETE(data);
+								LAYA_SAFE_DELETE_ARRAY(buf);
+
+								iter = m_wsHelper->m_subThreadWsMessageQueue->erase(iter);
+								LAYA_SAFE_DELETE(subThreadMsg);
+								break;
+							}
+							else {
+								data->updateBytesWritten(bytesWrite);
+								LAYA_SAFE_DELETE_ARRAY(buf);
+							}
+							}
+							//if (bytesWrite < data->len) {
+							//}
+
+
 						}
-						else
-						{
-							writeProtocol = LWS_WRITE_BINARY;
-						}
-                        
-						bytesWrite = lws_write(wsi,  &buf[LWS_SEND_BUFFER_PRE_PADDING], data->len, writeProtocol);
-						  if( bytesWrite==0){
-							//��ʱ�޷����ͣ��Ȼ������
-							break;
-						  }
-						if( bytesWrite==0){
-							break;
-						}
-						if (bytesWrite < 0)
-						{
-						    //���������ˡ�
-						    LOGE("WebSocket::onSocketCallback libwebsocket_write error! ");
-							break;
-						}
-						if (bytesWrite < data->len)
-						{
-						}
-                        
-						LAYA_SAFE_DELETE_ARRAY(data->bytes);
-						LAYA_SAFE_DELETE(data);
-						LAYA_SAFE_DELETE_ARRAY(buf);
-					}
-                    
-					iter = m_wsHelper->m_subThreadWsMessageQueue->erase(iter);
-					LAYA_SAFE_DELETE(subThreadMsg);
-				}
+
+
 
 //				m_wsHelper->m_subThreadWsMessageQueue->clear();
-                
-                
+
+
+				} while(false);
+
 				/* get notified as soon as we can write again */
-                
-				lws_callback_on_writable( wsi);
+
+				lws_callback_on_writable(wsi);
 			}
 			break;
             
+		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE:
+			{
+				// Remote peer sent a Close frame. Mark as closing; libwebsockets
+				// will transition to CLOSED and trigger the closed callback below.
+				m_readyState = State::CLOSING;
+				LOGI("WebSocket onSocketCallback peer initiated close (%zu bytes)", len);
+			}
+			break;
+		case LWS_CALLBACK_WSI_DESTROY:
+		case LWS_CALLBACK_CLIENT_CLOSED:
 		case LWS_CALLBACK_CLOSED:
 			{
                 
 				// CCLOG("%s", "connection closing..");
-
+				LOGI("WebSocket onSocketCallback connection closing %d reason", reason);
 				m_wsHelper->quitSubThread();
                 
 				if (m_readyState != State::CLOSED)
@@ -717,7 +782,7 @@ lws_vhost* WebSocket::createVhost(struct lws_protocols* protocols, int& sslConne
     {
         if (isCAFileExist)
         {
-#if defined(OHOS) || defined(ANDROID)
+#if defined(ANDROID) || defined(OHOS)
             // if ca file is in the apk, try to extract it to writable path
             std::string writablePath = gRedistPath;
             static std::string newCaFilePath = writablePath + caFileName;

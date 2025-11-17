@@ -107,6 +107,8 @@ namespace laya
         E_ONMOUSEMOVE,
         E_ONMOUSEWHEEL,
         E_ONMOUSEUP,
+        E_ONRIGHTMOUSEDOWN,
+        E_ONRIGHTMOUSEUP,
         E_ONKEYDOWN,
         E_ONKEYUP,
         E_JOYSTICK,

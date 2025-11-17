@@ -15,6 +15,7 @@
 		5E7AB4E71DD2D2AD001AE49F /* JSParticleTemplate2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5E7AB4E51DD2D2AD001AE49F /* JSParticleTemplate2D.cpp */; };
 		5E8E47811D8F939400662E69 /* LayaDeviceSensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5E8E47801D8F939400662E69 /* LayaDeviceSensor.mm */; };
 		8AC2E85F2BFCBD22000AA356 /* JSObjBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8AC2E85E2BFCBD21000AA356 /* JSObjBase.cpp */; };
+		8AF5D90D2E66A4FA008AFE89 /* Uri.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8AF5D90C2E66A4FA008AFE89 /* Uri.cpp */; };
 		9D8D6C6B1D43604A00EFE81A /* reflection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9D8D6C6A1D43604900EFE81A /* reflection.mm */; };
 		A2729C9A1D20C51C00EC01E6 /* JSHistory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A2729C981D20C51C00EC01E6 /* JSHistory.cpp */; };
 		A28DB2A31D2CB24400BAED5C /* LayaAlert.mm in Sources */ = {isa = PBXBuildFile; fileRef = A28DB2A21D2CB24400BAED5C /* LayaAlert.mm */; };
@@ -107,6 +108,8 @@
 		5E8E477F1D8F939400662E69 /* LayaDeviceSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayaDeviceSensor.h; sourceTree = "<group>"; };
 		5E8E47801D8F939400662E69 /* LayaDeviceSensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LayaDeviceSensor.mm; sourceTree = "<group>"; };
 		8AC2E85E2BFCBD21000AA356 /* JSObjBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JSObjBase.cpp; path = ../../../../source/conch/JSWrapper/JSInterface/JSObjBase.cpp; sourceTree = "<group>"; };
+		8AF5D90B2E66A4FA008AFE89 /* Uri.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Uri.h; sourceTree = "<group>"; };
+		8AF5D90C2E66A4FA008AFE89 /* Uri.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Uri.cpp; sourceTree = "<group>"; };
 		9D8D6C691D43604900EFE81A /* refection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = refection.h; path = Reflection/refection.h; sourceTree = "<group>"; };
 		9D8D6C6A1D43604900EFE81A /* reflection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = reflection.mm; path = Reflection/reflection.mm; sourceTree = "<group>"; };
 		A2729C981D20C51C00EC01E6 /* JSHistory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JSHistory.cpp; path = ../../../../source/conch/JSWrapper/LayaWrap/JSHistory.cpp; sourceTree = "<group>"; };
@@ -396,6 +399,8 @@
 		A2D119541D0BC924004C229D /* WebSocket */ = {
 			isa = PBXGroup;
 			children = (
+				8AF5D90B2E66A4FA008AFE89 /* Uri.h */,
+				8AF5D90C2E66A4FA008AFE89 /* Uri.cpp */,
 				A2D119581D0BC981004C229D /* WebSocket.cpp */,
 				A2D119591D0BC981004C229D /* WebSocket.h */,
 			);
@@ -654,6 +659,7 @@
 				A2C56AE01C8ADB5A009DDC1D /* conchConfig.mm in Sources */,
 				A2C56ABE1C8ADAE2009DDC1D /* LayaPlatformFactory.mm in Sources */,
 				A2D119CC1D0BCA70004C229D /* JSAppCache.cpp in Sources */,
+				8AF5D90D2E66A4FA008AFE89 /* Uri.cpp in Sources */,
 				A2D119E31D0BCA70004C229D /* JSXmlAttr.cpp in Sources */,
 				A28DB2A31D2CB24400BAED5C /* LayaAlert.mm in Sources */,
 				A2D119EA1D0BCB84004C229D /* JSIOSEditBox.cpp in Sources */,
@@ -783,7 +789,7 @@
 				OTHER_CFLAGS = (
 					"-I../../../include/common",
 					"-I../../../../ThirdParty/freetype/include/ios",
-					"-I../../../../ThirdParty/jpeg/include/ios",
+					"-I../../../../ThirdParty/jpeg-turbo/include/ios",
 					"-I../../../../ThirdParty/websockets/include/ios",
 					"-I../../../../ThirdParty/zip/include/ios",
 					"-I../../../../ThirdParty/curl/include/ios",
@@ -812,7 +818,7 @@
 				OTHER_CFLAGS = (
 					"-I../../../include/common",
 					"-I../../../../ThirdParty/freetype/include/ios",
-					"-I../../../../ThirdParty/jpeg/include/ios",
+					"-I../../../../ThirdParty/jpeg-turbo/include/ios",
 					"-I../../../../ThirdParty/websockets/include/ios",
 					"-I../../../../ThirdParty/zip/include/ios",
 					"-I../../../../ThirdParty/curl/include/ios",

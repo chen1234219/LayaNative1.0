@@ -12,16 +12,17 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 #    ------------------------------ V8
-add_library(v8_monolith STATIC IMPORTED GLOBAL)
-set_target_properties(v8_monolith PROPERTIES
-  IMPORTED_LOCATION ${LAYA_ROOT_PATH}/ThirdParty/v8_9.1/lib/ohos/libv8_monolith.a
-  INTERFACE_INCLUDE_DIRECTORIES ${LAYA_ROOT_PATH}/ThirdParty/v8_9.1/include
-)
+#add_library(v8_monolith STATIC IMPORTED GLOBAL)
+#set_target_properties(v8_monolith PROPERTIES
+#  IMPORTED_LOCATION ${LAYA_ROOT_PATH}/ThirdParty/v8_9.1/lib/ohos/libv8_monolith.a
+#  INTERFACE_INCLUDE_DIRECTORIES ${LAYA_ROOT_PATH}/ThirdParty/v8_9.1/include
+#)
 
 target_link_libraries(${PROJECT_NAME}
     ${LAYA_ROOT_PATH}/ThirdParty/curl/lib/ohos/libcurl.a
     ${LAYA_ROOT_PATH}/ThirdParty/websockets/lib/ohos/libwebsockets.a
-    ${LAYA_ROOT_PATH}/ThirdParty/jpeg/lib/ohos/libjpeg.a
+    ${LAYA_ROOT_PATH}/ThirdParty/jpeg-turbo/lib/ohos/libjpeg.a
+    ${LAYA_ROOT_PATH}/ThirdParty/jpeg-turbo/lib/ohos/libturbojpeg.a
     ${LAYA_ROOT_PATH}/ThirdParty/png/lib/ohos/libpng.a
     ${LAYA_ROOT_PATH}/ThirdParty/freetype/lib/ohos/libfreetype.a
     ${LAYA_ROOT_PATH}/ThirdParty/zip/lib/ohos/libzip.a
@@ -37,7 +38,7 @@ target_link_libraries(${PROJECT_NAME}
  target_include_directories(${PROJECT_NAME} PUBLIC 
     ${LAYA_ROOT_PATH}/ThirdParty/curl/include/ohos
     ${LAYA_ROOT_PATH}/ThirdParty/png/include/ohos
-    ${LAYA_ROOT_PATH}/ThirdParty/jpeg/include/ohos
+    ${LAYA_ROOT_PATH}/ThirdParty/jpeg-turbo/include/ohos
     ${LAYA_ROOT_PATH}/ThirdParty/freetype/include/ohos
     ${LAYA_ROOT_PATH}/ThirdParty/openal/include/ohos
     ${LAYA_ROOT_PATH}/ThirdParty/zip/include/ohos

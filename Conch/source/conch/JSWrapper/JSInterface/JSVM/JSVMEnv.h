@@ -5,7 +5,6 @@
 #include "JSVMArrayBuffer.h"
 #include <util/Log.h>
 #include "ark_runtime/jsvm.h"
-#include "libplatform/libplatform.h"
 #include "mutex"
 
 using HandleScope = JSVM_HandleScope;
@@ -25,6 +24,9 @@ namespace laya
         public:
             AutoEscHandleScope();
             ~AutoEscHandleScope();
+            EscapableHandleScope getScope() {
+                return _escapableHandleScope;
+            }
     
         private:
         EscapableHandleScope _escapableHandleScope;

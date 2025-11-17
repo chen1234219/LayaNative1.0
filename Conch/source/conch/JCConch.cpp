@@ -86,7 +86,7 @@ namespace laya
         pthread_key_create(&JSClassMgr::s_tls_curThread, NULL);
         pthread_key_create(&__TlsData::s_tls_curThread, NULL);
 #endif
-        m_sCachePath = gRedistPath + "/appCache";
+        m_sCachePath = gRedistPath + "appCache";
         g_DecThread = new JCWorkerThread(true);
         g_DecThread->setThreadName("image decode");
         JCDownloadMgr* pdmgr = JCDownloadMgr::getInstance();
@@ -170,7 +170,7 @@ namespace laya
 	}
 
 	void JCConch::onAppStart() {
-        m_strLocalStoragePath = gRedistPath + "/localstorage/";
+        m_strLocalStoragePath = gRedistPath + "localstorage/";
        
         try
         {

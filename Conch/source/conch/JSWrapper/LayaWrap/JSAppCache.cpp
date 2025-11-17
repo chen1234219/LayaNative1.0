@@ -41,7 +41,7 @@ namespace laya{
         m_pSvFileCache = new JCServerFileCache();
         m_pSvFileCache->m_pFuncTransUrl = GlobalTransUrl;
         m_pSvFileCache->m_pFuncTransUrlData = this;
-        m_pSvFileCache->setCachePath((gRedistPath + "/appCache").c_str());
+        m_pSvFileCache->setCachePath((gRedistPath + "appCache").c_str());
         if (JCScriptRuntime::s_JSRT->m_pFileResMgr)
         {
             JCFileResManager* pFileResManager = JCScriptRuntime::s_JSRT->m_pFileResMgr;
@@ -63,7 +63,7 @@ namespace laya{
         m_pSvFileCache = new JCServerFileCache();
         m_pSvFileCache->m_pFuncTransUrl = GlobalTransUrl;
         m_pSvFileCache->m_pFuncTransUrlData = this;
-        m_pSvFileCache->setCachePath((gRedistPath + "/appCache").c_str());
+        m_pSvFileCache->setCachePath((gRedistPath + "appCache").c_str());
         if (JCScriptRuntime::s_JSRT->m_pFileResMgr)
         {
             JCFileResManager* pFileResManager = JCScriptRuntime::s_JSRT->m_pFileResMgr;

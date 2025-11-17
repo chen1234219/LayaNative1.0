@@ -711,6 +711,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 8A42967B1B6757DB0072C3F7;
@@ -936,7 +937,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				OTHER_CFLAGS = (
 					"-I../../../../ThirdParty/freetype/include/ios",
-					"-I../../../../ThirdParty/jpeg/include/ios",
+					"-I../../../../ThirdParty/jpeg-turbo/include/ios",
 					"-I../../../../ThirdParty/zip/include/ios",
 					"-I../../../../ThirdParty/curl/include/ios",
 					"-I../../../../ThirdParty/png/include/ios",
@@ -960,7 +961,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				OTHER_CFLAGS = (
 					"-I../../../../ThirdParty/freetype/include/ios",
-					"-I../../../../ThirdParty/jpeg/include/ios",
+					"-I../../../../ThirdParty/jpeg-turbo/include/ios",
 					"-I../../../../ThirdParty/zip/include/ios",
 					"-I../../../../ThirdParty/curl/include/ios",
 					"-I../../../../ThirdParty/png/include/ios",

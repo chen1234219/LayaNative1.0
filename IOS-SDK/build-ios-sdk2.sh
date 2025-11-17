@@ -21,10 +21,15 @@ lipo -extract arm64 ../ThirdParty/freetype/lib/ios/libfreetype.a -o armv64/libfr
 lipo -extract i386 ../ThirdParty/freetype/lib/ios/libfreetype.a -o i386/libfreetype.a
 lipo -extract x86_64 ../ThirdParty/freetype/lib/ios/libfreetype.a -o x86_64/libfreetype.a
 
-lipo -extract armv7 ../ThirdParty/jpeg/lib/ios/libjpeg.a -o armv7a/libjpeg.a
-lipo -extract arm64 ../ThirdParty/jpeg/lib/ios/libjpeg.a -o armv64/libjpeg.a
-lipo -extract i386 ../ThirdParty/jpeg/lib/ios/libjpeg.a -o i386/libjpeg.a
-lipo -extract x86_64 ../ThirdParty/jpeg/lib/ios/libjpeg.a -o x86_64/libjpeg.a
+lipo -extract armv7 ../ThirdParty/jpeg-turbo/lib/ios/libjpeg.a -o armv7a/libjpeg.a
+lipo -extract arm64 ../ThirdParty/jpeg-turbo/lib/ios/libjpeg.a -o armv64/libjpeg.a
+lipo -extract i386 ../ThirdParty/jpeg-turbo/lib/ios/libjpeg.a -o i386/libjpeg.a
+lipo -extract x86_64 ../ThirdParty/jpeg-turbo/lib/ios/libjpeg.a -o x86_64/libjpeg.a
+
+lipo -extract armv7 ./ThirdParty/jpeg-turbo/lib/ios/libturbojpeg.a -o armv7a/libturbojpeg.a
+lipo -extract arm64 ./ThirdParty/jpeg-turbo/lib/ios/libturbojpeg.a -o armv64/libturbojpeg.a
+lipo -extract i386 ./ThirdParty/jpeg-turbo/lib/ios/libturbojpeg.a -o i386/libturbojpeg.a
+lipo -extract x86_64 ./ThirdParty/jpeg-turbo/lib/ios/libturbojpeg.a -o x86_64/libturbojpeg.a
 
 lipo -extract armv7 ../ThirdParty/png/lib/ios/libpng.a -o armv7a/libpng.a
 lipo -extract arm64 ../ThirdParty/png/lib/ios/libpng.a -o armv64/libpng.a
@@ -77,15 +82,7 @@ lipo -extract arm64 ../ThirdParty/openssl/lib/ios/libcrypto.a -o armv64/libcrypt
 lipo -extract i386 ../ThirdParty/openssl/lib/ios/libcrypto.a -o i386/libcrypto.a
 lipo -extract x86_64 ../ThirdParty/openssl/lib/ios/libcrypto.a -o x86_64/libcrypto.a
 
-lipo -extract armv7 ../ThirdParty/tpg/lib/ios/libTPGDec.a -o armv7a/libTPGDec.a
-lipo -extract arm64 ../ThirdParty/tpg/lib/ios/libTPGDec.a -o armv64/libTPGDec.a
-lipo -extract i386 ../ThirdParty/tpg/lib/ios/libTPGDec.a -o i386/libTPGDec.a
-lipo -extract x86_64 ../ThirdParty/tpg/lib/ios/libTPGDec.a -o x86_64/libTPGDec.a
 
-lipo -extract armv7 ../ThirdParty/tpg/lib/ios/liblibYUV.a -o armv7a/liblibYUV.a
-lipo -extract arm64 ../ThirdParty/tpg/lib/ios/liblibYUV.a -o armv64/liblibYUV.a
-lipo -extract i386 ../ThirdParty/tpg/lib/ios/liblibYUV.a -o i386/liblibYUV.a
-lipo -extract x86_64 ../ThirdParty/tpg/lib/ios/liblibYUV.a -o x86_64/liblibYUV.a
 
 cp ../Conch/libs/ios/libcommon.a armv64/libcommon.a
 #lipo -extract armv7 ../Conch/libs/ios/libcommon.a -o armv7a/libcommon.a

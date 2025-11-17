@@ -20,7 +20,7 @@ namespace laya {
 
     JSObjBaseV8::JSObjBaseV8()
 	{
-        //·ÅÔÚ¹¹ÔìÀïÃæ£¬ÈİÒ×µ¼ÖÂÃ»ÓĞjs»·¾³¶ø·Ç·¨¡£»¹ÊÇÍùºó·Å·Å°É¡£
+        //æ”¾åœ¨æ„é€ é‡Œé¢ï¼Œå®¹æ˜“å¯¼è‡´æ²¡æœ‰jsç¯å¢ƒè€Œéæ³•ã€‚è¿˜æ˜¯å¾€åæ”¾æ”¾å§ã€‚
 		m_isolate = NULL;
     }
 
@@ -40,7 +40,7 @@ namespace laya {
 
     void JSObjBaseV8::makeWeak()
 	{
-		m_persistent_handle.SetWeak(this, WeakCallback, v8::WeakCallbackType::kFinalizer);
+		m_persistent_handle.SetWeak(this, WeakCallback, v8::WeakCallbackType::kParameter);
 
     }
 

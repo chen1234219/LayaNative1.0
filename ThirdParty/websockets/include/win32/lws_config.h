@@ -59,7 +59,7 @@
 /* #undef LWS_USE_LIBEVENT */
 
 /* Build with support for ipv6 */
-#define LWS_USE_IPV6
+/* #undef LWS_USE_IPV6 */
 
 /* Build with support for UNIX domain socket */
 /* #undef LWS_USE_UNIX_SOCK */
@@ -74,7 +74,7 @@
 #define LWS_NO_DAEMONIZE
 
 /* Build without server support */
-#define LWS_NO_SERVER
+/* #undef LWS_NO_SERVER */
 
 /* Build without client support */
 /* #undef LWS_NO_CLIENT */

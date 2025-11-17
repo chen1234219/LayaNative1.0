@@ -74,7 +74,7 @@ add_library(common STATIC ${common_src})
 target_include_directories(common PUBLIC
     ../../../../ThirdParty/curl/include/ohos
     ../../../../ThirdParty/png/include/ohos
-    ../../../../ThirdParty/jpeg/include/ohos
+    ../../../../ThirdParty/jpeg-turbo/include/ohos
     ../../../../ThirdParty/freetype/include/ohos
     ../../../../ThirdParty/zip/include/ohos
     ../../../../ThirdParty/ogg/include/ohos

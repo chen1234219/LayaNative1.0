@@ -6,10 +6,14 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.example.layaboxsdk_demo"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'arm64-v8a','armeabi-v7a','x86'
+        }
     }
     sourceSets.main{
         jniLibs.srcDir 'libs'
