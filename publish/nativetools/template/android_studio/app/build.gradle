@@ -1,9 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "33.0.1"
+    compileSdkVersion 28
     useLibrary 'org.apache.http.legacy'
+    namespace="com.example.layaboxsdk_demo"
     defaultConfig {
         applicationId "com.example.layaboxsdk_demo"
         minSdkVersion 21
@@ -23,11 +23,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    namespace 'com.example.layaboxsdk_demo'
-    lint {
-        abortOnError false
-        checkReleaseBuilds false
     }
 }
 
